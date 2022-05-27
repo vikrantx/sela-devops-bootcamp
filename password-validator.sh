@@ -11,8 +11,9 @@
 # 6.If a validation failed provide a message explaining why
 #
 # Usage
+# password-validator.sh -h
 # password-validator.sh "<input-password>"
-
+# password-validator.sh -f "<input-file-path>"
 
 INPUT_PASSWORD=$1
 PASSWORD_LENGHT=10
@@ -21,9 +22,36 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 errorArr=()
 
-#print invalid messages by iterating errorArr array
+if [ $# -eq 0 ]
+then
+	echo "Missing options!"
+	echo "(run $0 -h for help)"
+	echo ""
+	exit 0
+fi
+
+while getopts ":hf:" OPTION; do
+	case $OPTION in
+
+		f)
+			FILE_PATH=$OPTARG
+			;;
+		h)
+			echo "Usage:"
+			echo "password-validator \"<input-password>\""
+			echo "password-validator.sh -h "
+			echo "password-validator.sh -f "
+			echo ""
+			echo "   -f  <password-file>   to validate password from specified file"
+			echo "   <input-password>	to validate password"
+			echo "   -h     help (this output)"
+			exit 1
+			;;
+	esac
+done
+
 printMessage() {
-	
+	#print error messages from array
 	for i in "${errorArr[@]}"; do
 		printf ${red}'%s\n' "$i"
 	done
@@ -33,7 +61,12 @@ printMessage() {
 }
 
 validatePassword(){
-
+	#check if password file provided, if yes read file content into variable
+	if [ ! -z "$FILE_PATH" ]
+	then
+		INPUT_PASSWORD=$(<$FILE_PATH)
+	fi
+	
 	if (( ${#INPUT_PASSWORD} < $PASSWORD_LENGHT )); then
 		errorArr+=("Should be $PASSWORD_LENGHT character long!")
 	fi
